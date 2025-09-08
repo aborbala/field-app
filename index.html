@@ -126,16 +126,19 @@
                     name: pointName,
                     lat: e.latlng.lat,
                     lon: e.latlng.lng,
-                    time: new Date().toISOString()
+                    time: new Date().toISOString(),
+                    marker: null // To hold the map marker object
                 };
+
+                // Add a marker for the collected point and store it
+                const marker = L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
+                pointData.marker = marker;
 
                 collectedPoints.push(pointData);
                 pointCounter++;
                 pointNameInput.value = ''; // Clear input for next point
                 updatePointsList();
                 
-                // Add a marker for the collected point
-                L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
                 statusElement.textContent = `Added '${pointName}' at the clicked location.`;
             }
             
@@ -196,16 +199,19 @@
                     name: pointName,
                     lat: currentCoords.latitude,
                     lon: currentCoords.longitude,
-                    time: new Date().toISOString()
+                    time: new Date().toISOString(),
+                    marker: null // To hold the map marker object
                 };
+                
+                // Add a marker for the collected point and store it
+                const marker = L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
+                pointData.marker = marker;
 
                 collectedPoints.push(pointData);
                 pointCounter++;
                 pointNameInput.value = ''; // Clear input
                 updatePointsList();
-                
-                // Add a marker for the collected point
-                L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
+
                 statusElement.textContent = `Registered '${pointName}' at your current location.`;
             });
             
@@ -237,7 +243,16 @@
             pointsListElement.addEventListener('click', (e) => {
                 if(e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-index')) {
                     const index = parseInt(e.target.getAttribute('data-index'));
-                    collectedPoints.splice(index, 1);
+                    
+                    // Remove the point from the array and get the removed item
+                    const removedPoint = collectedPoints.splice(index, 1)[0];
+                    
+                    // If the removed point and its marker exist, remove it from the map
+                    if (removedPoint && removedPoint.marker) {
+                        map.removeLayer(removedPoint.marker);
+                    }
+                    
+                    // Update the list in the UI
                     updatePointsList();
                 }
             });
