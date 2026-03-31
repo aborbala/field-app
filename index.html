@@ -3,309 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Field Data Collector</title>
+    <title>Field Collector — Offline GPS Data & Map Survey Tool</title>
+    <meta name="description" content="A professional-grade, browser-based GPS field data collection tool. Capture survey points and polygon boundaries, export GPX and GeoJSON. 100% private, no account required.">
+    <meta name="keywords" content="GPS data collector, field survey tool, mapping app, GPX export, GeoJSON boundary, offline map survey, GIS data capture">
     
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- OpenGraph (Social Sharing) -->
+    <meta property="og:title" content="Field Collector — Professional GPS Map Surveys">
+    <meta property="og:description" content="Capture geolocation data and polygon boundaries directly in your browser. Export to GIS tools like QGIS and ArcGIS.">
+    <meta property="og:type" content="website">
     
-    <!-- LeafletJS for maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="canonical" href="https://your-domain-here.com/">
+    <meta name="theme-color" content="#ff8c00">
+
+    <!-- LeafletJS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <!-- Industrial fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* Ensure the map container has a defined height */
-        #map { 
-            height: 45vh; 
-            width: 100%;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-        /* Small style adjustments for better mobile experience */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent bouncing */
-            font-family: 'Inter', sans-serif;
-        }
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .scrollable-list {
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-    </style>
+    <!-- External Assets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="logo-192.png">
 </head>
-<body class="bg-gray-100">
+<body>
+<div class="app">
+    <div id="map"></div>
 
-    <div class="main-container max-w-2xl mx-auto bg-white shadow-lg h-full">
-        <!-- Header -->
-        <header class="bg-indigo-600 text-white p-4 text-center shadow-md">
-            <h1 class="text-2xl font-bold">Field Data Collector</h1>
-        </header>
-
-        <!-- Map Container -->
-        <div class="p-4">
-            <div id="map"></div>
-            <p id="status" class="text-center text-sm text-gray-500 mt-2">Initializing and finding your location...</p>
+    <header class="header">
+        <div class="logo">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="17" cy="17" r="14" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>
+                <line x1="17" y1="2" x2="17" y2="32" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
+                <line x1="2" y1="17" x2="32" y2="17" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
+                <rect x="15" y="15" width="4" height="4" fill="var(--accent)"/>
+            </svg>
         </div>
-        
-        <!-- Controls -->
-        <div class="px-4 pb-4 border-b border-gray-200">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="pointName" placeholder="Point Name (e.g., Tree-01)" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button id="registerBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-md shadow-md transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100" disabled>
-                    Register Current Location
-                </button>
-            </div>
+        <span class="app-name">FIELD<span>//COLLECTOR</span></span>
+        <div class="hd-spacer"></div>
+        <div class="mode-pill" id="modePill">
+            <div class="mode-opt on" id="modePt" data-mode="point"><i class="fas fa-location-dot"></i>SURVEY</div>
+            <div class="mode-opt" id="modePoly" data-mode="poly"><i class="fas fa-draw-polygon"></i>POLY</div>
         </div>
-
-        <!-- Collected Points List -->
-        <div class="flex-grow flex flex-col min-h-0">
-             <div class="flex justify-between items-center p-4">
-                <h2 class="text-xl font-semibold text-gray-700">Collected Points</h2>
-                <button id="exportBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                    Export as GPX
-                </button>
-            </div>
-            <div id="pointsList" class="scrollable-list px-4 pb-4">
-                <p class="text-gray-500 text-center italic">No points collected yet.</p>
-            </div>
+        <div class="gps-pill" id="gpsPill">
+            <span class="gps-dot"></span><span id="gpsLabel">SIGNAL_SCAN…</span>
         </div>
+        <button class="hdr-rec" id="registerBtn" disabled><i class="fas fa-circle"></i> RECORD</button>
+        <button class="hdr-btn" id="layerBtn"><i class="fas fa-layer-group" id="layerIcon"></i></button>
+        <button class="hdr-btn" id="helpBtn"><i class="fas fa-question"></i></button>
+    </header>
 
+    <div class="poly-bar" id="polyBar">
+        <button class="poly-btn" id="polyUndo"><i class="fas fa-rotate-left"></i> UNDO</button>
+        <button class="poly-btn pb-finish" id="polyFinish" disabled><i class="fas fa-check"></i> FINISH</button>
+        <button class="poly-btn pb-cancel" id="polyCancel"><i class="fas fa-xmark"></i> EXIT</button>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const mapElement = document.getElementById('map');
-            const statusElement = document.getElementById('status');
-            const registerBtn = document.getElementById('registerBtn');
-            const exportBtn = document.getElementById('exportBtn');
-            const pointNameInput = document.getElementById('pointName');
-            const pointsListElement = document.getElementById('pointsList');
+    <div class="toast-wrap" id="toasts"></div>
 
-            let map;
-            let currentLocationMarker;
-            let collectedPoints = [];
-            let currentCoords = null;
-            let pointCounter = 1;
+    <div class="map-ctrl">
+        <button class="ctrl-btn" id="locateBtn"><i class="fas fa-bullseye"></i></button>
+        <div class="zoom-wrap">
+            <button class="ctrl-btn" id="zoomIn"><i class="fas fa-plus"></i></button>
+            <button class="ctrl-btn" id="zoomOut"><i class="fas fa-minus"></i></button>
+        </div>
+    </div>
 
-            // 1. Initialize Map
-            function initMap(lat, lon) {
-                map = L.map(mapElement).setView([lat, lon], 18); // High zoom level
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                }).addTo(map);
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet">
+        <div class="sheet-handle-row" id="sheetHandle"><div class="sheet-handle"></div></div>
+        <div class="sheet-head">
+            <span class="sheet-title">DATABASE</span>
+            <span class="sheet-badge" id="ptCount">0</span>
+            <div class="hd-spacer"></div>
+            <div style="position:relative">
+                <button class="exp-btn" id="exportBtn" disabled><i class="fas fa-file-export"></i> EXPORT</button>
+                <div class="exp-menu" id="exportMenu" style="display:none">
+                    <button class="exp-item" style="width:100%;padding:10px;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--f-mono);font-size:11px;" id="doGpx">GPX</button>
+                    <button class="exp-item" style="width:100%;padding:10px;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--f-mono);font-size:11px;" id="doGeojson">GeoJSON</button>
+                </div>
+            </div>
+        </div>
+        <div class="pts-list" id="ptList"></div>
+        <div style="padding: 12px 16px; border-top: 1px solid var(--border); font-size: 8px; opacity: 0.5; display: flex; align-items: center; background: #fff;">
+            <span>VAPOR-TECH SURVEY SYSTEM // 1.0</span>
+            <div style="flex:1"></div>
+            <a href="privacy.html" style="color: inherit; text-decoration: underline; margin-right: 15px;">PRIVACY_POLICY</a>
+            <a href="impressum.html" style="color: inherit; text-decoration: underline;">IMPRESSUM</a>
+        </div>
+    </div>
 
-                // Create a reusable marker for the current location
-                const blueIcon = L.icon({
-                    iconUrl: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22%232563eb%22%3E%3Cpath%20d%3D%22M12%202C8.13%202%205%205.13%205%209c0%205.25%207%2013%207%2013s7-7.75%207-13c0-3.87-3.13-7-7-7zm0%209.5c-1.38%200-2.5-1.12-2.5-2.5s1.12-2.5%202.5-2.5%202.5%201.12%202.5%202.5-1.12%202.5-2.5%202.5z%22%2F%3E%3C%2Fsvg%3E',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32]
-                });
-                currentLocationMarker = L.marker([lat, lon], { icon: blueIcon }).addTo(map)
-                    .bindPopup('Your Location').openPopup();
-                
-                statusElement.textContent = 'Location found. Tap the map or use the button to add points.';
-                registerBtn.disabled = false;
+    <!-- DIALOGS -->
+    <div class="name-dialog-bg" id="nameDialogBg">
+        <div class="name-dialog">
+            <div class="nd-head"><div class="nd-icon"><i class="fas fa-tag"></i></div><span class="nd-title">ASSIGN_ID</span></div>
+            <input class="nd-input" id="ndInput" type="text" autocomplete="off" placeholder="TAG_ID..."/>
+            <div class="nd-actions"><button class="nd-skip" id="ndSkip">SKIP</button><button class="nd-save" id="ndSave">SAVE</button></div>
+        </div>
+    </div>
 
-                // Add map click event listener
-                map.on('click', onMapClick);
-            }
+    <div class="modal-bg" id="helpModal">
+        <div class="modal">
+            <div class="modal-head"><div class="modal-icon"><i class="fas fa-info-circle"></i></div><span class="modal-title">OPERATIONS_MANUAL</span></div>
+            <div class="modal-content">
+                <section>
+                    <h4>1. Survey Mode (Points)</h4>
+                    <p>Ideal for marking single locations. 
+                    <br>• Click the <b>RECORD</b> button in the header to drop a pin at your current GPS location.
+                    <br>• Click anywhere on the <b>MAP</b> to manually place a survey point.</p>
+                </section>
+                <section>
+                    <h4>2. Poly Mode (Boundaries)</h4>
+                    <p>Used to outline areas or paths.
+                    <br>• Click the map to place <b>VERTICES</b>.
+                    <br>• Use <b>UNDO</b> to correct the last vertex.
+                    <br>• Once you have at least 3 points, hit <b>FINISH</b> to save the area.</p>
+                </section>
+                <section>
+                    <h4>3. Data Management</h4>
+                    <p>Open the <b>DATABASE</b> drawer at the bottom to view your collected items.
+                    <br>• <b>Crosshair</b> icon: Fly the map to that item.
+                    <br>• <b>Trash</b> icon: Permanently remove the entry.
+                    <br>• <b>Export</b>: Download your data as a timestamped GPX (for GPS devices) or GeoJSON (for GIS software).</p>
+                </section>
+                <section>
+                    <h4>4. GPS Data Privacy</h4>
+                    <p><b>FIELD // COLLECTOR</b> is a "private-by-design" tool. 
+                    <br>• <b>No Tracking</b>: We do not store your location on our servers.
+                    <br>• <b>Local Only</b>: Your data stays on your device (Local Storage) until you export or clear it.
+                    <br>• <b>GPX Privacy</b>: Geolocation data is only written to your local file during the export process.</p>
+                </section>
+                <section>
+                    <h4>5. Support & Contact</h4>
+                    <p>Issues or feature requests for the Field Survey system? Reach out to the vapor-tech dev team:
+                    <br><b>EMAIL</b>: support.fieldcollector@example.com
+                    <br><b>STATUS</b>: [ SYSTEM_NOMINAL ]</p>
+                </section>
+            </div>
+            <button class="modal-close" id="helpClose">CLOSE_MANUAL</button>
+        </div>
+    </div>
 
-            // NEW: Handle map clicks to add points
-            function onMapClick(e) {
-                const pointName = pointNameInput.value.trim() || `Clicked-${pointCounter}`;
-                
-                const pointData = {
-                    name: pointName,
-                    lat: e.latlng.lat,
-                    lon: e.latlng.lng,
-                    time: new Date().toISOString(),
-                    marker: null // To hold the map marker object
-                };
+    <div class="ad-strip">
+        <div style="font-size:10px;opacity:0.3">AD_SLOT_RESERVED</div>
+    </div>
+</div>
 
-                // Add a marker for the collected point and store it
-                const marker = L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
-                pointData.marker = marker;
-
-                collectedPoints.push(pointData);
-                pointCounter++;
-                pointNameInput.value = ''; // Clear input for next point
-                updatePointsList();
-                
-                statusElement.textContent = `Added '${pointName}' at the clicked location.`;
-            }
-            
-            // 2. Handle Location Finding
-            function onLocationFound(e) {
-                currentCoords = e.coords;
-                const { latitude, longitude, accuracy } = e.coords;
-                
-                const currentStatus = statusElement.textContent;
-                // Only update accuracy if not showing a temporary message like "Added point..."
-                if (currentStatus.startsWith('Initializing') || currentStatus.startsWith('Accuracy') || currentStatus.startsWith('Location found')) {
-                    statusElement.textContent = `Accuracy: ${accuracy.toFixed(1)} meters.`;
-                }
-
-                if (!map) {
-                    initMap(latitude, longitude);
-                } else {
-                    const latlng = [latitude, longitude];
-                    currentLocationMarker.setLatLng(latlng);
-                }
-            }
-
-            function onLocationError(err) {
-                statusElement.textContent = `Error getting location: ${err.message}`;
-                // Using a custom styled message box instead of alert
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
-                errorDiv.textContent = `Could not get your location. Please ensure location services are enabled.`;
-                document.body.appendChild(errorDiv);
-                setTimeout(() => errorDiv.remove(), 4000);
-            }
-
-            // Start watching position
-            if ('geolocation' in navigator) {
-                navigator.geolocation.watchPosition(onLocationFound, onLocationError, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 10000
-                });
-            } else {
-                statusElement.textContent = 'Geolocation is not supported by your browser.';
-            }
-
-            // 3. Register Point Logic
-            registerBtn.addEventListener('click', () => {
-                if (!currentCoords) {
-                    const warningDiv = document.createElement('div');
-                    warningDiv.className = 'fixed top-5 left-1/2 -translate-x-1/2 bg-yellow-500 text-black p-4 rounded-lg shadow-lg z-50';
-                    warningDiv.textContent = 'Current location not available yet. Please wait.';
-                    document.body.appendChild(warningDiv);
-                    setTimeout(() => warningDiv.remove(), 3000);
-                    return;
-                }
-
-                const pointName = pointNameInput.value.trim() || `Point-${pointCounter}`;
-                
-                const pointData = {
-                    name: pointName,
-                    lat: currentCoords.latitude,
-                    lon: currentCoords.longitude,
-                    time: new Date().toISOString(),
-                    marker: null // To hold the map marker object
-                };
-                
-                // Add a marker for the collected point and store it
-                const marker = L.marker([pointData.lat, pointData.lon]).addTo(map).bindPopup(pointData.name);
-                pointData.marker = marker;
-
-                collectedPoints.push(pointData);
-                pointCounter++;
-                pointNameInput.value = ''; // Clear input
-                updatePointsList();
-
-                statusElement.textContent = `Registered '${pointName}' at your current location.`;
-            });
-            
-            // 4. Update UI
-            function updatePointsList() {
-                if (collectedPoints.length === 0) {
-                    pointsListElement.innerHTML = '<p class="text-gray-500 text-center italic">No points collected yet.</p>';
-                    exportBtn.disabled = true;
-                } else {
-                    exportBtn.disabled = false;
-                    pointsListElement.innerHTML = ''; // Clear list
-                    const reversedPoints = [...collectedPoints].reverse(); // Show newest first
-                    reversedPoints.forEach((point, index) => {
-                        const listItem = document.createElement('div');
-                        listItem.className = 'flex justify-between items-center p-3 border-b border-gray-200';
-                        listItem.innerHTML = `
-                            <div>
-                                <p class="font-semibold text-gray-800">${point.name}</p>
-                                <p class="text-sm text-gray-500">${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}</p>
-                            </div>
-                            <button class="text-red-500 hover:text-red-700 font-semibold" data-index="${collectedPoints.length - 1 - index}">Delete</button>
-                        `;
-                        pointsListElement.appendChild(listItem);
-                    });
-                }
-            }
-            
-            // 5. Delete point
-            pointsListElement.addEventListener('click', (e) => {
-                if(e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-index')) {
-                    const index = parseInt(e.target.getAttribute('data-index'));
-                    
-                    // Remove the point from the array and get the removed item
-                    const removedPoint = collectedPoints.splice(index, 1)[0];
-                    
-                    // If the removed point and its marker exist, remove it from the map
-                    if (removedPoint && removedPoint.marker) {
-                        map.removeLayer(removedPoint.marker);
-                    }
-                    
-                    // Update the list in the UI
-                    updatePointsList();
-                }
-            });
-
-            // 6. Export Logic
-            exportBtn.addEventListener('click', () => {
-                if (collectedPoints.length === 0) return;
-
-                let gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="SimpleFieldCollector" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
-<metadata>
-  <name>Collected Field Points</name>
-  <time>${new Date().toISOString()}</time>
-</metadata>
-`;
-                collectedPoints.forEach(point => {
-                    gpxContent += `
-<wpt lat="${point.lat}" lon="${point.lon}">
-  <time>${point.time}</time>
-  <name>${escapeXml(point.name)}</name>
-  <sym>flag</sym>
-</wpt>`;
-                });
-
-                gpxContent += `\n</gpx>`;
-                
-                downloadFile('collected_points.gpx', gpxContent, 'application/gpx+xml');
-            });
-            
-            // Helper functions
-            function escapeXml(unsafe) {
-                return unsafe.replace(/[<>&'"]/g, function (c) {
-                    switch (c) {
-                        case '<': return '&lt;';
-                        case '>': return '&gt;';
-                        case '&': return '&amp;';
-                        case '\'': return '&apos;';
-                        case '"': return '&quot;';
-                    }
-                });
-            }
-            
-            function downloadFile(filename, content, mimeType) {
-                const blob = new Blob([content], { type: mimeType });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
-        });
-    </script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
-
