@@ -77,7 +77,7 @@ h1, h2, h3, .app-name, .sheet-title, .nd-title, .modal-title {
 .header > * { pointer-events: auto; }
 
 .logo { width: 32px; height: 32px; flex-shrink: 0; filter: drop-shadow(0 0 5px var(--accent-glow)); }
-.app-name { font-size: 24px; line-height: 1; color: var(--text); }
+.app-name { font-size: 24px; line-height: 1; color: var(--text); white-space: nowrap; }
 .app-name span { color: var(--accent); }
 .hd-spacer { flex:1; }
 
@@ -112,6 +112,51 @@ h1, h2, h3, .app-name, .sheet-title, .nd-title, .modal-title {
     cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--t);
 }
 .hdr-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* MOBILE RESPONSIVE TWEAKS */
+@media (max-width: 800px) {
+    .header { gap: 8px; padding: 0 10px; }
+    .app-name span { display: none; } /* Hide //COLLECTOR */
+}
+
+@media (max-width: 640px) {
+    .header { height: 52px; gap: 8px; }
+    .app-name { display: none; } /* Hide app name entirely */
+    .hd-spacer { display: none; } /* Allow custom right alignment */
+    #layerBtn { margin-left: auto; } /* Push layer and help buttons to the right */
+
+    .mode-pill { height: 40px; }
+    .mode-opt { height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 16px; }
+    .mode-opt span, .gps-pill #gpsLabel { display: none; }
+    .mode-opt i { font-size: 18px; margin: 0; }
+    
+    .hdr-rec { height: 40px; padding: 0 12px; font-size: 13px; gap: 6px; }
+    .hdr-btn { width: 40px; height: 40px; font-size: 18px; }
+    
+    .ctrl-btn { width: 44px; height: 44px; font-size: 18px; }
+}
+
+@media (max-width: 500px) {
+    .header { gap: 6px; padding: 0 8px; left: 8px; right: 8px; top: 8px; }
+    .logo { width: 32px; height: 32px; margin-right: 2px; }
+    
+    /* Center GPS dot if it's the only thing left in the pill */
+    .gps-pill { padding: 0; width: 36px; height: 36px; justify-content: center; }
+    
+    .mode-pill {
+        position: absolute; bottom: calc(var(--sheet-peek) + var(--ad-h) + 12px);
+        left: 50%; transform: translateX(-50%);
+        z-index: 100; box-shadow: var(--sh); background: var(--glass);
+        height: 48px; border-radius: 24px; padding: 4px; border: 1px solid var(--border);
+    }
+    .mode-opt { border-radius: 20px; padding: 0 20px; font-size: 12px; }
+    .mode-opt i { margin-right: 0; }
+    
+    .poly-bar { width: calc(100% - 16px); top: 64px; gap: 4px; padding: 6px; flex-wrap: wrap; justify-content: center; }
+    .poly-btn { height: 40px; font-size: 11px; flex: 1; min-width: 80px; justify-content: center; }
+
+    .sheet { width: 100%; border-radius: 16px 16px 0 0; border-left: none; border-right: none; }
+}
 
 /* POLYGON BAR */
 .poly-bar {
@@ -187,8 +232,8 @@ h1, h2, h3, .app-name, .sheet-title, .nd-title, .modal-title {
 .empty { text-align: center; padding: 40px 20px; color: var(--text-3); }
 
 /* MAP ELEMENTS */
-.loc-dot { width: 14px; height: 14px; background: var(--blue); border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.3); }
-.loc-ring { position: absolute; top:50%; left:50%; width: 40px; height: 40px; border: 2px solid var(--blue); border-radius: 50%; background: rgba(3,102,214,0.1); transform: translate(-50%,-50%); animation: ping 2s infinite; }
+.loc-dot { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; background: var(--blue); border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.3); transform: translate(-50%, -50%); z-index: 2; }
+.loc-ring { position: absolute; top:50%; left:50%; width: 40px; height: 40px; border: 2px solid var(--blue); border-radius: 50%; background: rgba(3,102,214,0.1); transform: translate(-50%, -50%); animation: ping 2s infinite; z-index: 1; }
 @keyframes ping { 0% { transform: translate(-50%,-50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(2); opacity: 0; } }
 
 .pin { width: 18px; height: 18px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
