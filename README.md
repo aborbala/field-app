@@ -89,5 +89,10 @@ npm run build
 
 ---
 
-## 📜 License
-Internal Development // VAPOR-TECH SURVEY SYSTEM 1.0. All Rights Reserved.
+## 📜 License & Credits
+
+**Engineered with ❤️ by [commit&coffee]**
+
+This project is released under the **MIT License**.  
+Open-source module designed for field data excellence.  
+© 2026 // [commit&coffee] // ALL_SYSTEMS_GO
