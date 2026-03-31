@@ -47,15 +47,15 @@
         <span class="app-name">FIELD<span>//COLLECTOR</span></span>
         <div class="hd-spacer"></div>
         <div class="mode-pill" id="modePill">
-            <div class="mode-opt on" id="modePt" data-mode="point"><i class="fas fa-location-dot"></i>SURVEY</div>
-            <div class="mode-opt" id="modePoly" data-mode="poly"><i class="fas fa-draw-polygon"></i>POLY</div>
+            <div class="mode-opt on" id="modePt" data-mode="point"><i class="fas fa-location-dot"></i><span>SURVEY</span></div>
+            <div class="mode-opt" id="modePoly" data-mode="poly"><i class="fas fa-draw-polygon"></i><span>POLY</span></div>
         </div>
         <div class="gps-pill" id="gpsPill">
             <span class="gps-dot"></span><span id="gpsLabel">SIGNAL_SCAN…</span>
         </div>
-        <button class="hdr-rec" id="registerBtn" disabled><i class="fas fa-circle"></i> RECORD</button>
-        <button class="hdr-btn" id="layerBtn"><i class="fas fa-layer-group" id="layerIcon"></i></button>
-        <button class="hdr-btn" id="helpBtn"><i class="fas fa-question"></i></button>
+        <button class="hdr-rec" id="registerBtn" disabled><i class="fas fa-circle"></i> <span>RECORD</span></button>
+        <button class="hdr-btn" id="layerBtn" title="Map Layers"><i class="fas fa-layer-group" id="layerIcon"></i></button>
+        <button class="hdr-btn" id="helpBtn" title="Help / Manual"><i class="fas fa-question"></i></button>
     </header>
 
     <div class="poly-bar" id="polyBar">
@@ -153,6 +153,7 @@
     </div>
 </div>
 
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "%VITE_CF_ANALYTICS_TOKEN%"}'></script><!-- End Cloudflare Web Analytics -->
 <script type="module" src="app.js"></script>
 </body>
 </html>
