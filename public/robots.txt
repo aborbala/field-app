@@ -1,0 +1,7 @@
+# Prevent bots from scraping map tiles unnecessarily
+User-agent: *
+Disallow: /dist/
+Disallow: /node_modules/
+
+# Standard indexing is fine, but we want to avoid high-volume bot traffic
+Crawl-delay: 10

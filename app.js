@@ -15,9 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const TILE_ORDER = ['colour', 'sat', 'dark'];
     const TILES = {
-        colour: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attr: '&copy; CARTO', icon: 'fa-layer-group', label: 'STREET' },
-        sat: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attr: 'Esri', icon: 'fa-satellite', label: 'SATELLITE' },
-        dark: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attr: '&copy; CARTO', icon: 'fa-moon', label: 'DARK' }
+        colour: { 
+            url: import.meta.env.VITE_TILE_COLOUR || 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', 
+            attr: import.meta.env.VITE_TILE_COLOUR_ATTR || '&copy; CARTO', 
+            icon: 'fa-layer-group', label: 'STREET' 
+        },
+        sat: { 
+            url: import.meta.env.VITE_TILE_SAT || 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', 
+            attr: import.meta.env.VITE_TILE_SAT_ATTR || 'Esri', 
+            icon: 'fa-satellite', label: 'SATELLITE' 
+        },
+        dark: { 
+            url: import.meta.env.VITE_TILE_DARK || 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', 
+            attr: import.meta.env.VITE_TILE_DARK_ATTR || '&copy; CARTO', 
+            icon: 'fa-moon', label: 'DARK' 
+        }
     };
     let activeTile = 'colour';
 
