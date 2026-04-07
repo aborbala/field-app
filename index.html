@@ -12,22 +12,16 @@
     <meta property="og:description" content="Capture geolocation data and polygon boundaries directly in your browser. Export to GIS tools like QGIS and ArcGIS.">
     <meta property="og:type" content="website">
     
-    <link rel="canonical" href="https://your-domain-here.com/">
+    <link rel="canonical" href="https://fieldcollector.app/">
     <meta name="theme-color" content="#ff8c00">
-
-    <!-- LeafletJS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
     <!-- Industrial fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- All styles/fonts are bundled via Vite — no CDN dependencies -->
     
-    <!-- External Assets -->
-    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="logo-192.png">
 </head>
@@ -81,11 +75,12 @@
             <span class="sheet-title">DATABASE</span>
             <span class="sheet-badge" id="ptCount">0</span>
             <div class="hd-spacer"></div>
-            <div style="position:relative">
-                <button class="exp-btn" id="exportBtn" disabled><i class="fas fa-file-export"></i> EXPORT</button>
+            <button class="purge-all-btn" id="purgeAllBtn" disabled><i class="fas fa-trash-can"></i><span> RESET</span></button>
+            <div class="exp-wrap" style="position:relative">
+                <button class="exp-btn" id="exportBtn" disabled><i class="fas fa-file-export"></i><span> EXPORT</span></button>
                 <div class="exp-menu" id="exportMenu" style="display:none">
-                    <button class="exp-item" style="width:100%;padding:10px;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--f-mono);font-size:11px;" id="doGpx">GPX</button>
-                    <button class="exp-item" style="width:100%;padding:10px;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--f-mono);font-size:11px;" id="doGeojson">GeoJSON</button>
+                    <button class="exp-item" id="doGpx">GPX</button>
+                    <button class="exp-item" id="doGeojson">GeoJSON</button>
                 </div>
             </div>
         </div>
@@ -103,6 +98,14 @@
             <div class="nd-head"><div class="nd-icon"><i class="fas fa-tag"></i></div><span class="nd-title">ASSIGN_ID</span></div>
             <input class="nd-input" id="ndInput" type="text" autocomplete="off" placeholder="TAG_ID..."/>
             <div class="nd-actions"><button class="nd-skip" id="ndSkip">SKIP</button><button class="nd-save" id="ndSave">SAVE</button></div>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="confirmModal">
+        <div class="modal confirm-modal">
+            <div class="nd-head"><div class="nd-icon"><i class="fas fa-triangle-exclamation"></i></div><span class="nd-title" id="confirmTitle">CONFIRM</span></div>
+            <p class="confirm-msg" id="confirmMsg"></p>
+            <div class="nd-actions"><button class="nd-skip" id="confirmCancel">CANCEL</button><button class="nd-save confirm-danger" id="confirmOk">CONFIRM</button></div>
         </div>
     </div>
 
