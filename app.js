@@ -1,8 +1,14 @@
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import './style.css';
 import { excXml, getTs, generateId, generateGpx, generateGeoJson } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const gpsPill = document.getElementById('gpsPill'), gpsLabel = document.getElementById('gpsLabel'), registerBtn = document.getElementById('registerBtn');
     const ptList = document.getElementById('ptList'), ptCount = document.getElementById('ptCount'), exportBtn = document.getElementById('exportBtn'), exportMenu = document.getElementById('exportMenu');
+    const purgeAllBtn = document.getElementById('purgeAllBtn');
+    const confirmModal = document.getElementById('confirmModal'), confirmMsg = document.getElementById('confirmMsg'), confirmOk = document.getElementById('confirmOk'), confirmCancel = document.getElementById('confirmCancel');
     const doGpx = document.getElementById('doGpx'), doGeojson = document.getElementById('doGeojson'), toasts = document.getElementById('toasts');
     const sheet = document.getElementById('sheet'), sheetHandle = document.getElementById('sheetHandle'), scrim = document.getElementById('scrim');
     const helpBtn = document.getElementById('helpBtn'), helpModal = document.getElementById('helpModal'), helpClose = document.getElementById('helpClose');
@@ -42,6 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
         toasts.appendChild(el); setTimeout(() => { if(el.parentNode){ el.classList.add('out'); el.addEventListener('animationend', () => el.remove()); } }, 4000);
     }
 
+    let confirmCallback = null;
+    function showConfirm(msg, onOk) {
+        confirmMsg.textContent = msg;
+        confirmCallback = onOk;
+        confirmModal.classList.add('on');
+    }
+    confirmOk.onclick = () => { confirmModal.classList.remove('on'); if (confirmCallback) { confirmCallback(); confirmCallback = null; } };
+    confirmCancel.onclick = () => { confirmModal.classList.remove('on'); confirmCallback = null; };
+
     function setSheet(open) { sheetOpen = open; sheet.classList.toggle('open', open); scrim.classList.toggle('on', open); }
     sheetHandle.addEventListener('click', () => setSheet(!sheetOpen)); scrim.addEventListener('click', () => setSheet(false));
 
@@ -74,6 +89,18 @@ document.addEventListener('DOMContentLoaded', () => {
     polyCancel.addEventListener('click', () => cancelPoly());
     polyFinish.addEventListener('click', () => showNameDialog(0,0,'POLY'));
 
+    // Keep name dialog above the software keyboard on mobile
+    if (window.visualViewport) {
+        const shiftDialogAboveKeyboard = () => {
+            if (!nameDialogBg.classList.contains('on')) return;
+            const vv = window.visualViewport;
+            const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+            nameDialogBg.style.paddingBottom = keyboardH > 50 ? keyboardH + 'px' : '';
+        };
+        window.visualViewport.addEventListener('resize', shiftDialogAboveKeyboard);
+        window.visualViewport.addEventListener('scroll', shiftDialogAboveKeyboard);
+    }
+
     function showNameDialog(lat, lon, src) {
         pendingPoint = { lat, lon, src };
         ndInput.value = `${collectionMode === 'poly'?'BOUND':'TRK'}-${String(counter).padStart(3,'0')}`;
@@ -83,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!pendingPoint) return;
         const name = ndInput.value.trim() || ndInput.value;
         nameDialogBg.classList.remove('on');
+        nameDialogBg.style.paddingBottom = '';
         if (collectionMode === 'poly') addPolygon(name); else addPoint(pendingPoint.lat, pendingPoint.lon, name);
         pendingPoint = null;
     }
@@ -105,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = e.target.closest('.popup-del');
             if (btn) {
                 const id = btn.dataset.id, idx = items.findIndex(p => p.id === id);
-                if (idx !== -1) { map.removeLayer(items[idx].marker); items.splice(idx, 1); renderList(); toast('PURGED'); }
+                if (idx !== -1) { showConfirm(`DELETE "${items[idx].name}"?`, () => { map.removeLayer(items[idx].marker); items.splice(idx, 1); renderList(); toast('PURGED'); }); }
             }
         });
     }
@@ -140,8 +168,15 @@ document.addEventListener('DOMContentLoaded', () => {
         counter++; cancelPoly(); renderList(); toast('COMMITTED');
     }
 
+    purgeAllBtn.onclick = () => {
+        showConfirm(`PURGE ALL ${items.length} RECORD(S)? THIS CANNOT BE UNDONE.`, () => {
+            items.forEach(p => map.removeLayer(p.marker));
+            items = []; renderList(); toast('DATABASE CLEARED', 'info');
+        });
+    };
+
     function renderList() {
-        ptCount.textContent = items.length; exportBtn.disabled = items.length === 0;
+        ptCount.textContent = items.length; exportBtn.disabled = items.length === 0; purgeAllBtn.disabled = items.length === 0;
         ptList.innerHTML = items.length ? '' : '<div class="empty">NO_DATA</div>';
         items.slice().reverse().forEach((p, i) => {
             const el = document.createElement('div'); el.className = 'pt-card';
@@ -154,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = e.target.closest('[data-id]')?.dataset.id; if (!id) return;
         const item = items.find(p => p.id === id);
         if (e.target.closest('.pt-show')) { setSheet(false); map.flyTo([item.lat, item.lon], 18); item.marker.openPopup(); }
-        if (e.target.closest('.pt-del')) { map.removeLayer(item.marker); items.splice(items.indexOf(item), 1); renderList(); }
+        if (e.target.closest('.pt-del')) { showConfirm(`DELETE "${item.name}"?`, () => { map.removeLayer(item.marker); items.splice(items.indexOf(item), 1); renderList(); toast('PURGED'); }); }
     };
 
     exportBtn.onclick = e => { e.stopPropagation(); expOpen = !expOpen; exportMenu.style.display = expOpen ? 'block' : 'none'; };
