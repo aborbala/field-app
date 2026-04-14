@@ -15,6 +15,33 @@
     <link rel="canonical" href="https://fieldcollector.app/">
     <meta name="theme-color" content="#ff8c00">
 
+    <!-- Twitter Card Data -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Field Collector — Professional GPS Map Surveys">
+    <meta name="twitter:description" content="Capture geolocation data and polygon boundaries directly in your browser. Export to GPX and GeoJSON.">
+    <meta name="twitter:image" content="https://fieldcollector.app/logo-512.png">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Field Collector",
+      "operatingSystem": "Web Browser",
+      "applicationCategory": "MapsApplication",
+      "description": "Professional-grade browser-based GPS field data collection tool. Capture survey points and polygon boundaries, export GPX and GeoJSON.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Commit & Coffee"
+      }
+    }
+    </script>
+
     <!-- Industrial fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,18 +54,19 @@
 </head>
 <body>
 <div class="app">
+    <main id="mainContent">
     <div id="map"></div>
 
     <header class="header">
         <div class="logo">
-            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg"><title>Field Collector Logo</title>
                 <circle cx="17" cy="17" r="14" stroke="var(--accent)" stroke-width="1.5" opacity="0.4"/>
                 <line x1="17" y1="2" x2="17" y2="32" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
                 <line x1="2" y1="17" x2="32" y2="17" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
                 <rect x="15" y="15" width="4" height="4" fill="var(--accent)"/>
             </svg>
         </div>
-        <span class="app-name">FIELD<span>//COLLECTOR</span></span>
+        <h1 class="app-name">FIELD<span>//COLLECTOR</span></h1>
         <div class="hd-spacer"></div>
         <div class="mode-pill" id="modePill">
             <div class="mode-opt on" id="modePt" data-mode="point"><i class="fas fa-location-dot"></i><span>SURVEY</span></div>
@@ -114,34 +142,34 @@
             <div class="modal-head"><div class="modal-icon"><i class="fas fa-info-circle"></i></div><span class="modal-title">OPERATIONS_MANUAL</span></div>
             <div class="modal-content">
                 <section>
-                    <h4>1. Survey Mode (Points)</h4>
+                    <h2>1. Survey Mode (Points)</h2>
                     <p>Ideal for marking single locations. 
                     <br>• Click the <b>RECORD</b> button in the header to drop a pin at your current GPS location.
                     <br>• Click anywhere on the <b>MAP</b> to manually place a survey point.</p>
                 </section>
                 <section>
-                    <h4>2. Poly Mode (Boundaries)</h4>
+                    <h2>2. Poly Mode (Boundaries)</h2>
                     <p>Used to outline areas or paths.
                     <br>• Click the map to place <b>VERTICES</b>.
                     <br>• Use <b>UNDO</b> to correct the last vertex.
                     <br>• Once you have at least 3 points, hit <b>FINISH</b> to save the area.</p>
                 </section>
                 <section>
-                    <h4>3. Data Management</h4>
+                    <h2>3. Data Management</h2>
                     <p>Open the <b>DATABASE</b> drawer at the bottom to view your collected items.
                     <br>• <b>Crosshair</b> icon: Fly the map to that item.
                     <br>• <b>Trash</b> icon: Permanently remove the entry.
                     <br>• <b>Export</b>: Download your data as a timestamped GPX (for GPS devices) or GeoJSON (for GIS software).</p>
                 </section>
                 <section>
-                    <h4>4. GPS Data Privacy</h4>
+                    <h2>4. GPS Data Privacy</h2>
                     <p><b>FIELD // COLLECTOR</b> is a "private-by-design" tool. 
                     <br>• <b>No Tracking</b>: We do not store your location on our servers.
                     <br>• <b>Local Only</b>: Your data stays on your device (Local Storage) until you export or clear it.
                     <br>• <b>GPX Privacy</b>: Geolocation data is only written to your local file during the export process.</p>
                 </section>
                 <section>
-                    <h4>5. Support & Contact</h4>
+                    <h2>5. Support & Contact</h2>
                     <p>Issues or feature requests for the Field Survey system? Reach out to the commit&coffee dev team:
                     <br><b>EMAIL</b>: dev@commitandcoffee.io
                     <br><b>SYSTEM_STATUS</b>: [ NOMINAL // ALL_SYSTEMS_GO ]</p>
@@ -150,6 +178,7 @@
             <button class="modal-close" id="helpClose">CLOSE_MANUAL</button>
         </div>
     </div>
+    </main>
 
     <div class="ad-strip">
         <div id="ad-slot"></div>

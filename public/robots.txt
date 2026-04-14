@@ -5,3 +5,5 @@ Disallow: /node_modules/
 
 # Standard indexing is fine, but we want to avoid high-volume bot traffic
 Crawl-delay: 10
+
+Sitemap: https://fieldcollector.app/sitemap.xml
