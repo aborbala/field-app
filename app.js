@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const layerBtn = document.getElementById('layerBtn'), layerIcon = document.getElementById('layerIcon');
     const nameDialogBg = document.getElementById('nameDialogBg'), ndInput = document.getElementById('ndInput'), ndSkip = document.getElementById('ndSkip'), ndSave = document.getElementById('ndSave');
     const modePt = document.getElementById('modePt'), modePoly = document.getElementById('modePoly'), polyBar = document.getElementById('polyBar'), polyUndo = document.getElementById('polyUndo'), polyFinish = document.getElementById('polyFinish'), polyCancel = document.getElementById('polyCancel');
+    const cookieBanner = document.getElementById('cookieBanner'), cbAccept = document.getElementById('cbAccept');
 
     let map, tileLayer, locMarker, currentCoords = null, items = [], counter = 1, sheetOpen = false, expOpen = false, pendingPoint = null, collectionMode = 'point', polyPoints = [], activePolyLine = null, activePolyArea = null, vertexMarkers = [];
 
@@ -38,6 +39,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     let activeTile = 'colour';
+    const DB_KEY = 'field_collector_data';
+
+    function saveItems() {
+        localStorage.setItem(DB_KEY, JSON.stringify({
+            items: items.map(p => {
+                const { marker, ...rest } = p;
+                return rest;
+            }),
+            counter
+        }));
+    }
+
+    function loadItems() {
+        const data = localStorage.getItem(DB_KEY);
+        if (data && map) {
+            try {
+                const parsed = JSON.parse(data);
+                counter = parsed.counter || 1;
+                parsed.items.forEach(p => {
+                    let marker;
+                    if (p.type === 'poly') {
+                        marker = L.polygon(p.path, { className:'poly-shape' }).addTo(map).bindPopup(`<strong>${p.name}</strong><br><button class="popup-del" data-id="${p.id}">DELETE</button>`);
+                    } else {
+                        const icon = L.divIcon({ className:'', html:'<div class="pin"></div>', iconSize:[20,20], iconAnchor:[10,20] });
+                        marker = L.marker([p.lat, p.lon], { icon }).addTo(map).bindPopup(`<strong>${p.name}</strong><br><button class="popup-del" data-id="${p.id}">DELETE</button>`);
+                    }
+                    items.push({ ...p, marker });
+                });
+                renderList();
+            } catch (e) { console.error('DB_LOAD_FAIL', e); }
+        }
+    }
 
 
 
@@ -133,9 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = e.target.closest('.popup-del');
             if (btn) {
                 const id = btn.dataset.id, idx = items.findIndex(p => p.id === id);
-                if (idx !== -1) { showConfirm(`DELETE "${items[idx].name}"?`, () => { map.removeLayer(items[idx].marker); items.splice(idx, 1); renderList(); toast('PURGED'); }); }
+                if (idx !== -1) { showConfirm(`DELETE "${items[idx].name}"?`, () => { map.removeLayer(items[idx].marker); items.splice(idx, 1); renderList(); saveItems(); toast('PURGED'); }); }
             }
         });
+        loadItems();
     }
 
     layerBtn.onclick = () => {
@@ -158,20 +192,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const icon = L.divIcon({ className:'', html:'<div class="pin"></div>', iconSize:[20,20], iconAnchor:[10,20] });
         const marker = L.marker([lat, lon], { icon }).addTo(map).bindPopup(`<strong>${name}</strong><br><button class="popup-del" data-id="${id}">DELETE</button>`);
         items.push({ id, type: 'point', name, lat, lon, time: new Date().toISOString(), marker });
-        counter++; renderList(); toast('COMMITTED');
+        counter++; renderList(); saveItems(); toast('COMMITTED');
     }
     function addPolygon(name) {
         const id = generateId();
         const marker = L.polygon(polyPoints.map(p=>[p.lat,p.lng]), { className:'poly-shape' }).addTo(map).bindPopup(`<strong>${name}</strong><br><button class="popup-del" data-id="${id}">DELETE</button>`);
         const c = marker.getBounds().getCenter();
         items.push({ id, type: 'poly', name, path: polyPoints.map(p=>[p.lat,p.lng]), lat: c.lat, lon: c.lng, time: new Date().toISOString(), marker });
-        counter++; cancelPoly(); renderList(); toast('COMMITTED');
+        counter++; cancelPoly(); renderList(); saveItems(); toast('COMMITTED');
     }
 
     purgeAllBtn.onclick = () => {
         showConfirm(`PURGE ALL ${items.length} RECORD(S)? THIS CANNOT BE UNDONE.`, () => {
             items.forEach(p => map.removeLayer(p.marker));
-            items = []; renderList(); toast('DATABASE CLEARED', 'info');
+            items = []; counter = 1; localStorage.removeItem(DB_KEY); renderList(); toast('DATABASE CLEARED', 'info');
         });
     };
 
@@ -224,4 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(err => console.error('SERVICE_WORKER_OFFLINE', err));
         });
     }
+
+    // PRIVACY BANNER LOGIC
+    if (!localStorage.getItem('field_collector_consent')) {
+        cookieBanner.style.display = 'block';
+    }
+    cbAccept.onclick = () => {
+        localStorage.setItem('field_collector_consent', 'true');
+        cookieBanner.style.display = 'none';
+    };
 });
