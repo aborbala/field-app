@@ -14,7 +14,16 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+    // Bypass Service Worker for map tiles to avoid silent fetch failures on localhost
+    if (e.request.url.includes('basemaps.cartocdn.com') || e.request.url.includes('arcgisonline.com')) return;
+
     e.respondWith(
-        caches.match(e.request).then(res => res || fetch(e.request))
+        caches.match(e.request).then(res => {
+            return res || fetch(e.request).catch(err => {
+                // Log the error but don't let it crash the SW
+                console.warn('[SW] Fetch failed:', e.request.url);
+                return null;
+            });
+        })
     );
 });
